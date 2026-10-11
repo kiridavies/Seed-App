@@ -6,9 +6,7 @@
   <title>My Seed Collection</title>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       font-family: Arial, sans-serif;
@@ -23,9 +21,7 @@
       padding: 24px;
     }
 
-    h1 {
-      margin-bottom: 6px;
-    }
+    h1 { margin-bottom: 6px; }
 
     .subtitle {
       color: #667066;
@@ -33,7 +29,7 @@
       margin-bottom: 28px;
     }
 
-    .card {
+    .card, .seed-card {
       background: white;
       padding: 20px;
       margin-bottom: 16px;
@@ -52,9 +48,7 @@
       cursor: pointer;
     }
 
-    button:hover {
-      background: #25451f;
-    }
+    button:hover { background: #25451f; }
 
     .back-button {
       width: auto;
@@ -62,7 +56,7 @@
       margin-bottom: 20px;
     }
 
-    #seedPage {
+    #seedPage, #sowPage {
       display: none;
     }
 
@@ -78,14 +72,6 @@
     .seed-count {
       margin-bottom: 18px;
       color: #667066;
-    }
-
-    .seed-card {
-      background: white;
-      padding: 18px;
-      border-radius: 14px;
-      margin-bottom: 14px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.05);
     }
 
     .seed-card h3 {
@@ -105,9 +91,7 @@
       line-height: 1.4;
     }
 
-    .label {
-      font-weight: bold;
-    }
+    .label { font-weight: bold; }
 
     .tag {
       display: inline-block;
@@ -119,6 +103,43 @@
       font-size: 13px;
     }
 
+    .section-title {
+      margin-top: 32px;
+      margin-bottom: 14px;
+      border-bottom: 2px solid #dce6d8;
+      padding-bottom: 8px;
+    }
+
+    .month-banner {
+      background: #31572c;
+      color: white;
+      padding: 18px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+    }
+
+    .month-banner h2 {
+      margin: 0 0 6px 0;
+    }
+
+    .month-banner p {
+      margin: 0;
+    }
+
+    .empty {
+      background: white;
+      padding: 18px;
+      border-radius: 14px;
+      color: #667066;
+      margin-bottom: 16px;
+    }
+
+    .stat {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
     .loading {
       text-align: center;
       padding: 40px;
@@ -126,9 +147,7 @@
     }
 
     @media (max-width: 600px) {
-      .container {
-        padding: 18px;
-      }
+      .container { padding: 18px; }
     }
   </style>
 </head>
@@ -137,7 +156,7 @@
 
 <div class="container">
 
-  <!-- HOME PAGE -->
+  <!-- HOME -->
   <div id="homePage">
 
     <h1>🌱 My Seed Collection</h1>
@@ -151,16 +170,14 @@
 
     <div class="card">
       <h2>🌱 Sow This Month</h2>
-      <p>See which seeds in your collection can be sown now.</p>
-      <button onclick="alert('We will build this next!')">
-        What Can I Sow?
-      </button>
+      <p id="sowSummary">See which seeds in your collection can be sown now.</p>
+      <button onclick="showSowPage()">What Can I Sow?</button>
     </div>
 
     <div class="card">
       <h2>🪴 Growing Now</h2>
       <p>Track what you've already sown and how it's progressing.</p>
-      <button onclick="alert('We will build this after that!')">
+      <button onclick="alert('We will build this next!')">
         View Growing
       </button>
     </div>
@@ -168,7 +185,7 @@
   </div>
 
 
-  <!-- SEED INVENTORY PAGE -->
+  <!-- MY SEEDS -->
   <div id="seedPage">
 
     <button class="back-button" onclick="showHome()">← Home</button>
@@ -192,6 +209,31 @@
 
   </div>
 
+
+  <!-- SOW THIS MONTH -->
+  <div id="sowPage">
+
+    <button class="back-button" onclick="showHome()">← Home</button>
+
+    <h1>🌱 Sow This Month</h1>
+    <p class="subtitle">Based on the seeds currently in your collection</p>
+
+    <div class="month-banner">
+      <h2 id="monthTitle"></h2>
+      <p id="monthCount"></p>
+    </div>
+
+    <h2 class="section-title">🏠 Sow Indoors</h2>
+    <div id="indoorList"></div>
+
+    <h2 class="section-title">🌱 Sow Outdoors</h2>
+    <div id="outdoorList"></div>
+
+    <h2 class="section-title">🌷 Plant Bulbs</h2>
+    <div id="bulbList"></div>
+
+  </div>
+
 </div>
 
 
@@ -199,10 +241,28 @@
 
 let allSeeds = [];
 
+const monthNames = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December"
+];
 
-/*
-  Reads CSV correctly, including commas inside quotation marks.
-*/
+const monthMap = {
+  jan:0,
+  feb:1,
+  mar:2,
+  apr:3,
+  may:4,
+  jun:5,
+  jul:6,
+  aug:7,
+  sep:8,
+  sept:8,
+  oct:9,
+  nov:10,
+  dec:11
+};
+
+
 function parseCSV(text) {
 
   const rows = [];
@@ -289,6 +349,7 @@ async function loadSeeds() {
     );
 
     displaySeeds(allSeeds);
+    updateSowSummary();
 
   }
 
@@ -312,7 +373,9 @@ function clean(value) {
     "not uploaded",
     "unspecified",
     "unknown",
-    "n/a"
+    "n/a",
+    "not applicable",
+    "not usually needed"
   ];
 
   if (badValues.includes(value.toLowerCase())) {
@@ -320,6 +383,96 @@ function clean(value) {
   }
 
   return value;
+}
+
+
+function seedCard(seed, sowType = "") {
+
+  const item = clean(seed["Item"]);
+  const variety = clean(seed["Variety"]);
+  const type = clean(seed["Type"]);
+  const seedBulb = clean(seed["Seed / Bulb"]);
+  const count = clean(seed["Seed Count"]);
+  const brand = clean(seed["Brand"]);
+  const indoor = clean(seed["Sow Indoor"]);
+  const outdoor = clean(seed["Sow/Plant Outdoor"]);
+  const harvest = clean(seed["Harvest"]);
+  const sun = clean(seed["Sun/Shade"]);
+  const perennial = clean(seed["Perenial"]);
+  const profile = clean(seed["Profile/Specs"]);
+  const instructions = clean(seed["Sowing Instructions"]);
+
+  let sowInfo = "";
+
+  if (sowType === "indoor" && indoor) {
+    sowInfo = `<p class="detail"><span class="label">🏠 Indoor window:</span> ${indoor}</p>`;
+  }
+
+  if ((sowType === "outdoor" || sowType === "bulb") && outdoor) {
+    sowInfo = `<p class="detail"><span class="label">🌱 Outdoor window:</span> ${outdoor}</p>`;
+  }
+
+  return `
+
+    <div class="seed-card">
+
+      <h3>${item || "Unnamed Seed"}</h3>
+
+      ${variety
+        ? `<div class="variety">${variety}</div>`
+        : ""
+      }
+
+      <div>
+        ${type ? `<span class="tag">${type}</span>` : ""}
+        ${seedBulb ? `<span class="tag">${seedBulb}</span>` : ""}
+        ${perennial ? `<span class="tag">${perennial}</span>` : ""}
+      </div>
+
+      ${brand
+        ? `<p class="detail"><span class="label">Brand:</span> ${brand}</p>`
+        : ""
+      }
+
+      ${count
+        ? `<p class="detail"><span class="label">Pack / seed count:</span> ${count}</p>`
+        : ""
+      }
+
+      ${sowInfo}
+
+      ${sowType === "" && indoor
+        ? `<p class="detail"><span class="label">🏠 Sow indoors:</span> ${indoor}</p>`
+        : ""
+      }
+
+      ${sowType === "" && outdoor
+        ? `<p class="detail"><span class="label">🌱 Sow / plant outside:</span> ${outdoor}</p>`
+        : ""
+      }
+
+      ${harvest
+        ? `<p class="detail"><span class="label">🧺 Harvest / flowers:</span> ${harvest}</p>`
+        : ""
+      }
+
+      ${sun
+        ? `<p class="detail"><span class="label">☀️ Light:</span> ${sun}</p>`
+        : ""
+      }
+
+      ${profile
+        ? `<p class="detail"><span class="label">About:</span> ${profile}</p>`
+        : ""
+      }
+
+      ${instructions
+        ? `<p class="detail"><span class="label">Sowing:</span> ${instructions}</p>`
+        : ""
+      }
+
+    </div>
+  `;
 }
 
 
@@ -338,83 +491,7 @@ function displaySeeds(seeds) {
     return;
   }
 
-  list.innerHTML = seeds.map(seed => {
-
-    const item = clean(seed["Item"]);
-    const variety = clean(seed["Variety"]);
-    const type = clean(seed["Type"]);
-    const seedBulb = clean(seed["Seed / Bulb"]);
-    const count = clean(seed["Seed Count"]);
-    const brand = clean(seed["Brand"]);
-    const indoor = clean(seed["Sow Indoor"]);
-    const outdoor = clean(seed["Sow/Plant Outdoor"]);
-    const harvest = clean(seed["Harvest"]);
-    const sun = clean(seed["Sun/Shade"]);
-    const perennial = clean(seed["Perenial"]);
-    const profile = clean(seed["Profile/Specs"]);
-    const instructions = clean(seed["Sowing Instructions"]);
-
-    return `
-
-      <div class="seed-card">
-
-        <h3>${item || "Unnamed Seed"}</h3>
-
-        ${variety
-          ? `<div class="variety">${variety}</div>`
-          : ""
-        }
-
-        <div>
-          ${type ? `<span class="tag">${type}</span>` : ""}
-          ${seedBulb ? `<span class="tag">${seedBulb}</span>` : ""}
-          ${perennial ? `<span class="tag">${perennial}</span>` : ""}
-        </div>
-
-        ${brand
-          ? `<p class="detail"><span class="label">Brand:</span> ${brand}</p>`
-          : ""
-        }
-
-        ${count
-          ? `<p class="detail"><span class="label">Pack / seed count:</span> ${count}</p>`
-          : ""
-        }
-
-        ${indoor
-          ? `<p class="detail"><span class="label">🏠 Sow indoors:</span> ${indoor}</p>`
-          : ""
-        }
-
-        ${outdoor
-          ? `<p class="detail"><span class="label">🌱 Sow / plant outside:</span> ${outdoor}</p>`
-          : ""
-        }
-
-        ${harvest
-          ? `<p class="detail"><span class="label">🧺 Harvest / flowers:</span> ${harvest}</p>`
-          : ""
-        }
-
-        ${sun
-          ? `<p class="detail"><span class="label">☀️ Light:</span> ${sun}</p>`
-          : ""
-        }
-
-        ${profile
-          ? `<p class="detail"><span class="label">About:</span> ${profile}</p>`
-          : ""
-        }
-
-        ${instructions
-          ? `<p class="detail"><span class="label">Sowing:</span> ${instructions}</p>`
-          : ""
-        }
-
-      </div>
-    `;
-
-  }).join("");
+  list.innerHTML = seeds.map(seed => seedCard(seed)).join("");
 }
 
 
@@ -436,10 +513,185 @@ function filterSeeds() {
 }
 
 
+function textIncludesMonth(text, targetMonth) {
+
+  if (!text) return false;
+
+  const lower = text.toLowerCase();
+
+  if (
+    lower.includes("not applicable") ||
+    lower.includes("not usually needed")
+  ) {
+    return false;
+  }
+
+  const sections = lower.split("/");
+
+  for (const section of sections) {
+
+    const found = [];
+
+    const regex =
+      /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)\b/g;
+
+    let match;
+
+    while ((match = regex.exec(section)) !== null) {
+      found.push(monthMap[match[1]]);
+    }
+
+    if (found.length === 1) {
+
+      if (found[0] === targetMonth) {
+        return true;
+      }
+
+    }
+
+    if (found.length >= 2) {
+
+      const start = found[0];
+      const end = found[1];
+
+      if (start <= end) {
+
+        if (targetMonth >= start && targetMonth <= end) {
+          return true;
+        }
+
+      } else {
+
+        if (targetMonth >= start || targetMonth <= end) {
+          return true;
+        }
+
+      }
+    }
+  }
+
+  return false;
+}
+
+
+function getThisMonthSeeds() {
+
+  const currentMonth = new Date().getMonth();
+
+  const indoor = [];
+  const outdoor = [];
+  const bulbs = [];
+
+  allSeeds.forEach(seed => {
+
+    const isBulb =
+      (seed["Seed / Bulb"] || "").toLowerCase() === "bulb";
+
+    if (
+      textIncludesMonth(seed["Sow Indoor"], currentMonth) &&
+      !isBulb
+    ) {
+      indoor.push(seed);
+    }
+
+    if (
+      textIncludesMonth(seed["Sow/Plant Outdoor"], currentMonth)
+    ) {
+
+      if (isBulb) {
+        bulbs.push(seed);
+      } else {
+        outdoor.push(seed);
+      }
+    }
+
+  });
+
+  return {
+    indoor,
+    outdoor,
+    bulbs
+  };
+}
+
+
+function updateSowSummary() {
+
+  const month = new Date().getMonth();
+  const result = getThisMonthSeeds();
+
+  const unique = new Set();
+
+  [...result.indoor, ...result.outdoor, ...result.bulbs]
+    .forEach(seed => {
+      unique.add(
+        (seed.Item || "") + "|" + (seed.Variety || "")
+      );
+    });
+
+  document.getElementById("sowSummary").textContent =
+    unique.size +
+    " varieties in your collection can be sown or planted in " +
+    monthNames[month] +
+    ".";
+}
+
+
+function displaySowMonth() {
+
+  const month = new Date().getMonth();
+  const result = getThisMonthSeeds();
+
+  document.getElementById("monthTitle").textContent =
+    "📅 " + monthNames[month];
+
+  const unique = new Set();
+
+  [...result.indoor, ...result.outdoor, ...result.bulbs]
+    .forEach(seed => {
+      unique.add(
+        (seed.Item || "") + "|" + (seed.Variety || "")
+      );
+    });
+
+  document.getElementById("monthCount").textContent =
+    unique.size +
+    " varieties from your inventory can be sown or planted this month.";
+
+  document.getElementById("indoorList").innerHTML =
+    result.indoor.length
+      ? result.indoor.map(seed => seedCard(seed, "indoor")).join("")
+      : "<div class='empty'>Nothing in your collection is listed for indoor sowing this month.</div>";
+
+  document.getElementById("outdoorList").innerHTML =
+    result.outdoor.length
+      ? result.outdoor.map(seed => seedCard(seed, "outdoor")).join("")
+      : "<div class='empty'>Nothing in your collection is listed for outdoor sowing this month.</div>";
+
+  document.getElementById("bulbList").innerHTML =
+    result.bulbs.length
+      ? result.bulbs.map(seed => seedCard(seed, "bulb")).join("")
+      : "<div class='empty'>No bulbs in your collection are listed for planting this month.</div>";
+}
+
+
 function showSeeds() {
 
   document.getElementById("homePage").style.display = "none";
+  document.getElementById("sowPage").style.display = "none";
   document.getElementById("seedPage").style.display = "block";
+
+  window.scrollTo(0, 0);
+}
+
+
+function showSowPage() {
+
+  displaySowMonth();
+
+  document.getElementById("homePage").style.display = "none";
+  document.getElementById("seedPage").style.display = "none";
+  document.getElementById("sowPage").style.display = "block";
 
   window.scrollTo(0, 0);
 }
@@ -448,6 +700,7 @@ function showSeeds() {
 function showHome() {
 
   document.getElementById("seedPage").style.display = "none";
+  document.getElementById("sowPage").style.display = "none";
   document.getElementById("homePage").style.display = "block";
 
   window.scrollTo(0, 0);
