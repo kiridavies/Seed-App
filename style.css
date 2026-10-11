@@ -1,1 +1,217 @@
+* {
+  box-sizing: border-box;
+}
 
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f7f1;
+  margin: 0;
+  color: #253126;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+h1 {
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  color: #667066;
+  margin-top: 0;
+  margin-bottom: 28px;
+}
+
+.card,
+.seed-card {
+  background: white;
+  padding: 20px;
+  margin-bottom: 16px;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  background: #31572c;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #25451f;
+}
+
+.back-button {
+  width: auto;
+  padding: 10px 16px;
+  margin-bottom: 20px;
+}
+
+#seedPage,
+#sowPage,
+#growingPage {
+  display: none;
+}
+
+.search-box,
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.form-textarea {
+  min-height: 90px;
+}
+
+.seed-count {
+  margin-bottom: 18px;
+  color: #667066;
+}
+
+.seed-card {
+  overflow: hidden;
+}
+
+.seed-image {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 14px;
+  background: #eef2eb;
+}
+
+.seed-card h3 {
+  margin-top: 0;
+  margin-bottom: 5px;
+  font-size: 20px;
+}
+
+.variety {
+  font-weight: bold;
+  color: #4d6b47;
+  margin-bottom: 12px;
+}
+
+.detail {
+  margin: 6px 0;
+  line-height: 1.4;
+}
+
+.label {
+  font-weight: bold;
+}
+
+.tag {
+  display: inline-block;
+  padding: 5px 10px;
+  background: #e8efe4;
+  border-radius: 20px;
+  margin-right: 5px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.section-title {
+  margin-top: 32px;
+  margin-bottom: 14px;
+  border-bottom: 2px solid #dce6d8;
+  padding-bottom: 8px;
+}
+
+.month-banner {
+  background: #31572c;
+  color: white;
+  padding: 18px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+}
+
+.month-banner h2 {
+  margin: 0 0 6px 0;
+}
+
+.month-banner p {
+  margin: 0;
+}
+
+.empty {
+  background: white;
+  padding: 18px;
+  border-radius: 14px;
+  color: #667066;
+  margin-bottom: 16px;
+}
+
+.details {
+  display: none;
+  margin-top: 12px;
+}
+
+.card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.card-actions button {
+  flex: 1;
+}
+
+.secondary-button {
+  background: #71856b;
+}
+
+.month-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.month-selector button {
+  padding: 10px;
+  font-size: 14px;
+}
+
+.month-selector button.active {
+  background: #193b18;
+}
+
+.growing-status {
+  font-weight: bold;
+  color: #31572c;
+}
+
+.small-note {
+  color: #667066;
+  font-size: 14px;
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 18px;
+  }
+
+  .card-actions {
+    flex-direction: column;
+  }
+
+  .month-selector {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
