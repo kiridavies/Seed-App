@@ -3,30 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Seed App</title>
+  <title>My Seed Collection</title>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: Arial, sans-serif;
       background: #f4f7f1;
       margin: 0;
-      padding: 0;
       color: #253126;
     }
 
     .container {
-      max-width: 500px;
+      max-width: 900px;
       margin: 0 auto;
       padding: 24px;
     }
 
     h1 {
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .subtitle {
       color: #667066;
-      margin-bottom: 30px;
+      margin-top: 0;
+      margin-bottom: 28px;
     }
 
     .card {
@@ -35,10 +39,6 @@
       margin-bottom: 16px;
       border-radius: 16px;
       box-shadow: 0 4px 14px rgba(0,0,0,0.06);
-    }
-
-    .card h2 {
-      margin-top: 0;
     }
 
     button {
@@ -51,12 +51,94 @@
       font-size: 16px;
       cursor: pointer;
     }
+
+    button:hover {
+      background: #25451f;
+    }
+
+    .back-button {
+      width: auto;
+      padding: 10px 16px;
+      margin-bottom: 20px;
+    }
+
+    #seedPage {
+      display: none;
+    }
+
+    .search-box {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 16px;
+      margin-bottom: 18px;
+    }
+
+    .seed-count {
+      margin-bottom: 18px;
+      color: #667066;
+    }
+
+    .seed-card {
+      background: white;
+      padding: 18px;
+      border-radius: 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    }
+
+    .seed-card h3 {
+      margin-top: 0;
+      margin-bottom: 5px;
+      font-size: 20px;
+    }
+
+    .variety {
+      font-weight: bold;
+      color: #4d6b47;
+      margin-bottom: 12px;
+    }
+
+    .detail {
+      margin: 6px 0;
+      line-height: 1.4;
+    }
+
+    .label {
+      font-weight: bold;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 5px 10px;
+      background: #e8efe4;
+      border-radius: 20px;
+      margin-right: 5px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #667066;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 18px;
+      }
+    }
   </style>
 </head>
 
 <body>
 
-  <div class="container">
+<div class="container">
+
+  <!-- HOME PAGE -->
+  <div id="homePage">
 
     <h1>🌱 My Seed Collection</h1>
     <p class="subtitle">Seed inventory and sowing tracker</p>
@@ -64,22 +146,317 @@
     <div class="card">
       <h2>📦 My Seeds</h2>
       <p>View everything currently in your seed collection.</p>
-      <button>View Seeds</button>
+      <button onclick="showSeeds()">View Seeds</button>
     </div>
 
     <div class="card">
       <h2>🌱 Sow This Month</h2>
       <p>See which seeds in your collection can be sown now.</p>
-      <button>What Can I Sow?</button>
+      <button onclick="alert('We will build this next!')">
+        What Can I Sow?
+      </button>
     </div>
 
     <div class="card">
       <h2>🪴 Growing Now</h2>
       <p>Track what you've already sown and how it's progressing.</p>
-      <button>View Growing</button>
+      <button onclick="alert('We will build this after that!')">
+        View Growing
+      </button>
     </div>
 
   </div>
+
+
+  <!-- SEED INVENTORY PAGE -->
+  <div id="seedPage">
+
+    <button class="back-button" onclick="showHome()">← Home</button>
+
+    <h1>📦 My Seeds</h1>
+    <p class="subtitle">Everything currently in your collection</p>
+
+    <input
+      type="text"
+      id="search"
+      class="search-box"
+      placeholder="Search seeds or varieties..."
+      oninput="filterSeeds()"
+    >
+
+    <div id="seedCount" class="seed-count"></div>
+
+    <div id="seedList">
+      <div class="loading">Loading your seeds...</div>
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+let allSeeds = [];
+
+
+/*
+  Reads CSV correctly, including commas inside quotation marks.
+*/
+function parseCSV(text) {
+
+  const rows = [];
+  let row = [];
+  let value = "";
+  let insideQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+
+    const char = text[i];
+    const next = text[i + 1];
+
+    if (char === '"' && insideQuotes && next === '"') {
+      value += '"';
+      i++;
+    }
+
+    else if (char === '"') {
+      insideQuotes = !insideQuotes;
+    }
+
+    else if (char === ',' && !insideQuotes) {
+      row.push(value);
+      value = "";
+    }
+
+    else if ((char === '\n' || char === '\r') && !insideQuotes) {
+
+      if (char === '\r' && next === '\n') {
+        i++;
+      }
+
+      row.push(value);
+
+      if (row.some(cell => cell.trim() !== "")) {
+        rows.push(row);
+      }
+
+      row = [];
+      value = "";
+    }
+
+    else {
+      value += char;
+    }
+  }
+
+  if (value || row.length) {
+    row.push(value);
+    rows.push(row);
+  }
+
+  const headers = rows[0].map(h => h.trim());
+
+  return rows.slice(1).map(values => {
+
+    const object = {};
+
+    headers.forEach((header, index) => {
+      object[header] = values[index] ? values[index].trim() : "";
+    });
+
+    return object;
+  });
+}
+
+
+async function loadSeeds() {
+
+  try {
+
+    const response = await fetch("Seed_inventory_enriched.csv");
+
+    if (!response.ok) {
+      throw new Error("Could not find seed inventory.");
+    }
+
+    const text = await response.text();
+
+    allSeeds = parseCSV(text);
+
+    allSeeds.sort((a, b) =>
+      (a.Item || "").localeCompare(b.Item || "")
+    );
+
+    displaySeeds(allSeeds);
+
+  }
+
+  catch (error) {
+
+    document.getElementById("seedList").innerHTML =
+      "<div class='card'><strong>Something went wrong loading the seed inventory.</strong><br><br>" +
+      error.message +
+      "</div>";
+
+  }
+}
+
+
+function clean(value) {
+
+  if (!value) return "";
+
+  const badValues = [
+    "not recorded",
+    "not uploaded",
+    "unspecified",
+    "unknown",
+    "n/a"
+  ];
+
+  if (badValues.includes(value.toLowerCase())) {
+    return "";
+  }
+
+  return value;
+}
+
+
+function displaySeeds(seeds) {
+
+  const list = document.getElementById("seedList");
+
+  document.getElementById("seedCount").textContent =
+    seeds.length + " varieties shown";
+
+  if (seeds.length === 0) {
+
+    list.innerHTML =
+      "<div class='card'>No seeds match your search.</div>";
+
+    return;
+  }
+
+  list.innerHTML = seeds.map(seed => {
+
+    const item = clean(seed["Item"]);
+    const variety = clean(seed["Variety"]);
+    const type = clean(seed["Type"]);
+    const seedBulb = clean(seed["Seed / Bulb"]);
+    const count = clean(seed["Seed Count"]);
+    const brand = clean(seed["Brand"]);
+    const indoor = clean(seed["Sow Indoor"]);
+    const outdoor = clean(seed["Sow/Plant Outdoor"]);
+    const harvest = clean(seed["Harvest"]);
+    const sun = clean(seed["Sun/Shade"]);
+    const perennial = clean(seed["Perenial"]);
+    const profile = clean(seed["Profile/Specs"]);
+    const instructions = clean(seed["Sowing Instructions"]);
+
+    return `
+
+      <div class="seed-card">
+
+        <h3>${item || "Unnamed Seed"}</h3>
+
+        ${variety
+          ? `<div class="variety">${variety}</div>`
+          : ""
+        }
+
+        <div>
+          ${type ? `<span class="tag">${type}</span>` : ""}
+          ${seedBulb ? `<span class="tag">${seedBulb}</span>` : ""}
+          ${perennial ? `<span class="tag">${perennial}</span>` : ""}
+        </div>
+
+        ${brand
+          ? `<p class="detail"><span class="label">Brand:</span> ${brand}</p>`
+          : ""
+        }
+
+        ${count
+          ? `<p class="detail"><span class="label">Pack / seed count:</span> ${count}</p>`
+          : ""
+        }
+
+        ${indoor
+          ? `<p class="detail"><span class="label">🏠 Sow indoors:</span> ${indoor}</p>`
+          : ""
+        }
+
+        ${outdoor
+          ? `<p class="detail"><span class="label">🌱 Sow / plant outside:</span> ${outdoor}</p>`
+          : ""
+        }
+
+        ${harvest
+          ? `<p class="detail"><span class="label">🧺 Harvest / flowers:</span> ${harvest}</p>`
+          : ""
+        }
+
+        ${sun
+          ? `<p class="detail"><span class="label">☀️ Light:</span> ${sun}</p>`
+          : ""
+        }
+
+        ${profile
+          ? `<p class="detail"><span class="label">About:</span> ${profile}</p>`
+          : ""
+        }
+
+        ${instructions
+          ? `<p class="detail"><span class="label">Sowing:</span> ${instructions}</p>`
+          : ""
+        }
+
+      </div>
+    `;
+
+  }).join("");
+}
+
+
+function filterSeeds() {
+
+  const search =
+    document.getElementById("search").value.toLowerCase();
+
+  const filtered = allSeeds.filter(seed => {
+
+    return Object.values(seed)
+      .join(" ")
+      .toLowerCase()
+      .includes(search);
+
+  });
+
+  displaySeeds(filtered);
+}
+
+
+function showSeeds() {
+
+  document.getElementById("homePage").style.display = "none";
+  document.getElementById("seedPage").style.display = "block";
+
+  window.scrollTo(0, 0);
+}
+
+
+function showHome() {
+
+  document.getElementById("seedPage").style.display = "none";
+  document.getElementById("homePage").style.display = "block";
+
+  window.scrollTo(0, 0);
+}
+
+
+loadSeeds();
+
+</script>
 
 </body>
 </html>
