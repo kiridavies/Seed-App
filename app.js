@@ -122,14 +122,16 @@ async function loadSeeds() {
   }
 }
 
+/*
+  Images now live in the main Seed-App folder.
+  Whatever filename is in the Picture column is used directly.
+*/
 function getImage(seed) {
   const image = clean(seed["Picture"]);
 
   if (!image) return "";
 
-  if (image.startsWith("images/")) return image;
-
-  return "images/" + image;
+  return image;
 }
 
 function seedKey(seed) {
@@ -180,7 +182,16 @@ function seedCard(seed, mode = "") {
   return `
     <div class="seed-card">
 
-      ${image ? `<img class="seed-image" src="${image}" alt="${item} ${variety}" onerror="this.style.display='none'">` : ""}
+      ${
+        image
+          ? `<img
+              class="seed-image"
+              src="${image}"
+              alt="${item} ${variety}"
+              onerror="this.style.display='none'"
+            >`
+          : ""
+      }
 
       <h3>${item || "Unnamed Seed"}</h3>
 
@@ -195,55 +206,70 @@ function seedCard(seed, mode = "") {
       ${sowInfo}
 
       <div class="card-actions">
-        <button class="secondary-button" onclick="toggleDetails('${id}')">
+
+        <button
+          class="secondary-button"
+          onclick="toggleDetails('${id}')"
+        >
           View Details
         </button>
 
-        <button onclick='openSowForm(${JSON.stringify(seedKey(seed))})'>
+        <button
+          onclick='openSowForm(${JSON.stringify(seedKey(seed))})'
+        >
           Mark as Sown
         </button>
+
       </div>
 
       <div class="details" id="${id}">
 
-        ${brand
-          ? `<p class="detail"><span class="label">Brand:</span> ${brand}</p>`
-          : ""
+        ${
+          brand
+            ? `<p class="detail"><span class="label">Brand:</span> ${brand}</p>`
+            : ""
         }
 
-        ${count
-          ? `<p class="detail"><span class="label">Pack / seed count:</span> ${count}</p>`
-          : ""
+        ${
+          count
+            ? `<p class="detail"><span class="label">Pack / seed count:</span> ${count}</p>`
+            : ""
         }
 
-        ${indoor
-          ? `<p class="detail"><span class="label">🏠 Sow indoors:</span> ${indoor}</p>`
-          : ""
+        ${
+          indoor
+            ? `<p class="detail"><span class="label">🏠 Sow indoors:</span> ${indoor}</p>`
+            : ""
         }
 
-        ${outdoor
-          ? `<p class="detail"><span class="label">🌱 Sow / plant outside:</span> ${outdoor}</p>`
-          : ""
+        ${
+          outdoor
+            ? `<p class="detail"><span class="label">🌱 Sow / plant outside:</span> ${outdoor}</p>`
+            : ""
         }
 
-        ${harvest
-          ? `<p class="detail"><span class="label">🧺 Harvest / flowers:</span> ${harvest}</p>`
-          : ""
+        ${
+          harvest
+            ? `<p class="detail"><span class="label">🧺 Harvest / flowers:</span> ${harvest}</p>`
+            : ""
         }
 
-        ${sun
-          ? `<p class="detail"><span class="label">☀️ Light:</span> ${sun}</p>`
-          : ""
+        ${
+          sun
+            ? `<p class="detail"><span class="label">☀️ Light:</span> ${sun}</p>`
+            : ""
         }
 
-        ${profile
-          ? `<p class="detail"><span class="label">About:</span> ${profile}</p>`
-          : ""
+        ${
+          profile
+            ? `<p class="detail"><span class="label">About:</span> ${profile}</p>`
+            : ""
         }
 
-        ${instructions
-          ? `<p class="detail"><span class="label">Sowing:</span> ${instructions}</p>`
-          : ""
+        ${
+          instructions
+            ? `<p class="detail"><span class="label">Sowing:</span> ${instructions}</p>`
+            : ""
         }
 
       </div>
@@ -297,6 +323,7 @@ function textIncludesMonth(text, targetMonth) {
 
   for (const section of sections) {
     const found = [];
+
     const regex =
       /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)\b/g;
 
@@ -365,7 +392,8 @@ function renderMonthButtons() {
   container.innerHTML = monthNames.map((month, index) => `
     <button
       class="${index === selectedMonth ? "active" : ""}"
-      onclick="selectMonth(${index})">
+      onclick="selectMonth(${index})"
+    >
       ${month.slice(0,3)}
     </button>
   `).join("");
@@ -411,11 +439,16 @@ function displaySowMonth() {
 }
 
 function getGrowingRecords() {
-  return JSON.parse(localStorage.getItem("growingRecords") || "[]");
+  return JSON.parse(
+    localStorage.getItem("growingRecords") || "[]"
+  );
 }
 
 function saveGrowingRecords(records) {
-  localStorage.setItem("growingRecords", JSON.stringify(records));
+  localStorage.setItem(
+    "growingRecords",
+    JSON.stringify(records)
+  );
 }
 
 function openSowForm(key) {
@@ -424,6 +457,7 @@ function openSowForm(key) {
   if (!seed) return;
 
   document.getElementById("sowSeedKey").value = key;
+
   document.getElementById("sowSeedName").textContent =
     (seed.Item || "") +
     (seed.Variety ? " — " + seed.Variety : "");
@@ -435,16 +469,21 @@ function openSowForm(key) {
   document.getElementById("sowLocation").value = "";
   document.getElementById("sowNotes").value = "";
 
-  document.getElementById("sowModal").style.display = "block";
+  document.getElementById("sowModal").style.display =
+    "block";
 }
 
 function closeSowForm() {
-  document.getElementById("sowModal").style.display = "none";
+  document.getElementById("sowModal").style.display =
+    "none";
 }
 
 function saveSowing() {
-  const key = document.getElementById("sowSeedKey").value;
-  const seed = allSeeds.find(s => seedKey(s) === key);
+  const key =
+    document.getElementById("sowSeedKey").value;
+
+  const seed =
+    allSeeds.find(s => seedKey(s) === key);
 
   if (!seed) return;
 
@@ -453,18 +492,25 @@ function saveSowing() {
     seedKey: key,
     item: seed.Item || "",
     variety: seed.Variety || "",
-    dateSown: document.getElementById("sowDate").value,
-    quantity: document.getElementById("sowQuantity").value,
-    location: document.getElementById("sowLocation").value,
-    notes: document.getElementById("sowNotes").value,
+    dateSown:
+      document.getElementById("sowDate").value,
+    quantity:
+      document.getElementById("sowQuantity").value,
+    location:
+      document.getElementById("sowLocation").value,
+    notes:
+      document.getElementById("sowNotes").value,
     status: "Sown"
   };
 
   const records = getGrowingRecords();
+
   records.push(record);
+
   saveGrowingRecords(records);
 
   closeSowForm();
+
   displayGrowing();
 
   alert("Added to Growing Now");
@@ -475,25 +521,35 @@ function updateStatus(id, newStatus) {
 
   const updated = records.map(record => {
     if (record.id === id) {
-      return { ...record, status: newStatus };
+      return {
+        ...record,
+        status: newStatus
+      };
     }
+
     return record;
   });
 
   saveGrowingRecords(updated);
+
   displayGrowing();
 }
 
 function deleteGrowingRecord(id) {
-  const records = getGrowingRecords()
-    .filter(record => record.id !== id);
+  const records =
+    getGrowingRecords().filter(
+      record => record.id !== id
+    );
 
   saveGrowingRecords(records);
+
   displayGrowing();
 }
 
 function displayGrowing() {
-  const container = document.getElementById("growingList");
+  const container =
+    document.getElementById("growingList");
+
   const records = getGrowingRecords();
 
   if (!container) return;
@@ -501,127 +557,174 @@ function displayGrowing() {
   if (records.length === 0) {
     container.innerHTML =
       "<div class='empty'>Nothing is currently being tracked.</div>";
+
     return;
   }
 
-  container.innerHTML = records.map(record => `
-    <div class="seed-card">
+  container.innerHTML =
+    records.map(record => `
+      <div class="seed-card">
 
-      <h3>${record.item}</h3>
+        <h3>${record.item}</h3>
 
-      ${record.variety
-        ? `<div class="variety">${record.variety}</div>`
-        : ""
-      }
+        ${
+          record.variety
+            ? `<div class="variety">${record.variety}</div>`
+            : ""
+        }
 
-      <p class="detail">
-        <span class="label">Date sown:</span>
-        ${record.dateSown || "Not recorded"}
-      </p>
+        <p class="detail">
+          <span class="label">Date sown:</span>
+          ${record.dateSown || "Not recorded"}
+        </p>
 
-      ${record.quantity
-        ? `<p class="detail"><span class="label">Quantity:</span> ${record.quantity}</p>`
-        : ""
-      }
+        ${
+          record.quantity
+            ? `<p class="detail"><span class="label">Quantity:</span> ${record.quantity}</p>`
+            : ""
+        }
 
-      ${record.location
-        ? `<p class="detail"><span class="label">Location:</span> ${record.location}</p>`
-        : ""
-      }
+        ${
+          record.location
+            ? `<p class="detail"><span class="label">Location:</span> ${record.location}</p>`
+            : ""
+        }
 
-      ${record.notes
-        ? `<p class="detail"><span class="label">Notes:</span> ${record.notes}</p>`
-        : ""
-      }
+        ${
+          record.notes
+            ? `<p class="detail"><span class="label">Notes:</span> ${record.notes}</p>`
+            : ""
+        }
 
-      <p class="growing-status">
-        Status: ${record.status}
-      </p>
+        <p class="growing-status">
+          Status: ${record.status}
+        </p>
 
-      <select
-        class="form-select"
-        onchange="updateStatus(${record.id}, this.value)"
-      >
-        ${[
-          "Sown",
-          "Germinated",
-          "Seedling",
-          "Potted On",
-          "Planted Out",
-          "Harvesting",
-          "Finished"
-        ].map(status => `
-          <option
-            value="${status}"
-            ${status === record.status ? "selected" : ""}
-          >
-            ${status}
-          </option>
-        `).join("")}
-      </select>
+        <select
+          class="form-select"
+          onchange="updateStatus(${record.id}, this.value)"
+        >
 
-      <button
-        class="secondary-button"
-        onclick="deleteGrowingRecord(${record.id})"
-      >
-        Remove Record
-      </button>
+          ${[
+            "Sown",
+            "Germinated",
+            "Seedling",
+            "Potted On",
+            "Planted Out",
+            "Harvesting",
+            "Finished"
+          ].map(status => `
+            <option
+              value="${status}"
+              ${status === record.status ? "selected" : ""}
+            >
+              ${status}
+            </option>
+          `).join("")}
 
-    </div>
-  `).join("");
+        </select>
+
+        <button
+          class="secondary-button"
+          onclick="deleteGrowingRecord(${record.id})"
+        >
+          Remove Record
+        </button>
+
+      </div>
+    `).join("");
 }
 
 function exportGrowingData() {
   const records = getGrowingRecords();
 
-  const blob = new Blob(
-    [JSON.stringify(records, null, 2)],
-    { type: "application/json" }
-  );
+  const blob =
+    new Blob(
+      [JSON.stringify(records, null, 2)],
+      { type: "application/json" }
+    );
 
-  const url = URL.createObjectURL(blob);
+  const url =
+    URL.createObjectURL(blob);
 
-  const a = document.createElement("a");
+  const a =
+    document.createElement("a");
+
   a.href = url;
-  a.download = "seed-growing-backup.json";
+
+  a.download =
+    "seed-growing-backup.json";
+
   a.click();
 
   URL.revokeObjectURL(url);
 }
 
 function showSeeds() {
-  document.getElementById("homePage").style.display = "none";
-  document.getElementById("sowPage").style.display = "none";
-  document.getElementById("growingPage").style.display = "none";
-  document.getElementById("seedPage").style.display = "block";
+  document.getElementById("homePage").style.display =
+    "none";
+
+  document.getElementById("sowPage").style.display =
+    "none";
+
+  document.getElementById("growingPage").style.display =
+    "none";
+
+  document.getElementById("seedPage").style.display =
+    "block";
+
   window.scrollTo(0, 0);
 }
 
 function showSowPage() {
   displaySowMonth();
 
-  document.getElementById("homePage").style.display = "none";
-  document.getElementById("seedPage").style.display = "none";
-  document.getElementById("growingPage").style.display = "none";
-  document.getElementById("sowPage").style.display = "block";
+  document.getElementById("homePage").style.display =
+    "none";
+
+  document.getElementById("seedPage").style.display =
+    "none";
+
+  document.getElementById("growingPage").style.display =
+    "none";
+
+  document.getElementById("sowPage").style.display =
+    "block";
+
   window.scrollTo(0, 0);
 }
 
 function showGrowing() {
   displayGrowing();
 
-  document.getElementById("homePage").style.display = "none";
-  document.getElementById("seedPage").style.display = "none";
-  document.getElementById("sowPage").style.display = "none";
-  document.getElementById("growingPage").style.display = "block";
+  document.getElementById("homePage").style.display =
+    "none";
+
+  document.getElementById("seedPage").style.display =
+    "none";
+
+  document.getElementById("sowPage").style.display =
+    "none";
+
+  document.getElementById("growingPage").style.display =
+    "block";
+
   window.scrollTo(0, 0);
 }
 
 function showHome() {
-  document.getElementById("seedPage").style.display = "none";
-  document.getElementById("sowPage").style.display = "none";
-  document.getElementById("growingPage").style.display = "none";
-  document.getElementById("homePage").style.display = "block";
+  document.getElementById("seedPage").style.display =
+    "none";
+
+  document.getElementById("sowPage").style.display =
+    "none";
+
+  document.getElementById("growingPage").style.display =
+    "none";
+
+  document.getElementById("homePage").style.display =
+    "block";
+
   window.scrollTo(0, 0);
 }
 
